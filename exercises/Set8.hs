@@ -246,7 +246,7 @@ exampleCircle = fill red (circle 80 100 200)
 --        ["000000","000000","000000","000000","000000","000000"]]
 
 rectangle :: Int -> Int -> Int -> Int -> Shape
-rectangle x0 y0 w h = Shape (\(Coord x y) -> 
+rectangle x0 y0 w h = Shape (\(Coord x y) ->
   x >= x0 &&
   x < x0+w &&
   y >= y0 &&
@@ -352,7 +352,7 @@ stripes a b = Picture f
 --       ["000000","000000","000000","000000","000000"]]
 
 paint :: Picture -> Shape -> Picture -> Picture
-paint pat shape base = todo
+paint (Picture pat) shape (Picture base) = Picture (\(Coord x y) -> if contains shape x y then pat (Coord x y) else base (Coord x y))
 
 ------------------------------------------------------------------------------
 
@@ -418,19 +418,22 @@ xy = Picture f
 data Fill = Fill Color
 
 instance Transform Fill where
-  apply = todo
+  apply (Fill color) (Picture _) = Picture (\(Coord x y) -> color)
 
 data Zoom = Zoom Int
   deriving (Show)
 
 instance Transform Zoom where
-  apply = todo
+  apply (Zoom z) p = zoom z p
 
 data Flip = FlipX | FlipY | FlipXY
   deriving (Show)
 
 instance Transform Flip where
-  apply = todo
+  apply f (Picture p) = case f of
+    FlipX -> Picture ( \(Coord x y) -> p (Coord (-x) y) )
+    FlipY -> Picture ( \(Coord x y) -> p (Coord x (-y)) )
+    FlipXY -> Picture ( \(Coord x y) -> p (Coord y x) )
 
 ------------------------------------------------------------------------------
 
